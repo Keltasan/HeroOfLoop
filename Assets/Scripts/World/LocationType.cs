@@ -13,5 +13,6 @@ public enum LocationType
     Library,
     Shop,
     Mansion,
-    Battle
+    Battle,
+    Path
 }

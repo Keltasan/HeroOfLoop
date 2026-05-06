@@ -95,6 +95,7 @@ public class MapRenderer : MonoBehaviour
             LocationType.Library => Color.blue,
             LocationType.Shop => Color.yellow,
             LocationType.Mansion => new Color(0.8f, 0f, 0.8f),
+            LocationType.Path => Color.cyan,
             _ => Color.white
         };
     }
