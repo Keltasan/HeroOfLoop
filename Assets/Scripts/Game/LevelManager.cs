@@ -117,8 +117,41 @@ public class LevelManager : MonoBehaviour
         if (card != null)
         {
             Debug.Log($"Выпала карточка: {card.displayName}");
-            // TODO: Показать UI для размещения карточки на карте
+            
+            // Автоматически выставляем карточку на карте
+            if (mapGenerator != null && mapRenderer != null)
+            {
+                bool placed = mapGenerator.AutoPlaceCard(card.type);
+                if (placed)
+                {
+                    // Обновляем визуализацию карты
+                    Vector2Int cardPos = GetRandomCardPosition();
+                    mapRenderer.UpdateTileVisualization(cardPos.x, cardPos.y, card.type);
+                    Debug.Log($"LevelManager: Карточка '{card.displayName}' автоматически выставлена");
+                }
+            }
         }
+    }
+    
+    /// <summary>
+    /// Получает случайную позицию для выставления карточки
+    /// </summary>
+    private Vector2Int GetRandomCardPosition()
+    {
+        // Это вспомогательный метод для получения позиции выставленной карточки
+        // Можно оптимизировать, если нужно
+        Vector2Int startPos = mapGenerator.GetStartPosition();
+        
+        // Для упрощения возвращаем случайную позицию рядом со стартом
+        // В реальном приложении можно отслеживать последнюю позицию выставления
+        Vector2Int randomOffset = new Vector2Int(Random.Range(-2, 3), Random.Range(-2, 3));
+        Vector2Int pos = startPos + randomOffset;
+        
+        // Убеждаемся, что позиция в границах карты
+        pos.x = Mathf.Clamp(pos.x, 0, mapGenerator.GetMapWidth() - 1);
+        pos.y = Mathf.Clamp(pos.y, 0, mapGenerator.GetMapHeight() - 1);
+        
+        return pos;
     }
 
     /*public void PlaceLocationCard(int x, int y, LocationCard card)

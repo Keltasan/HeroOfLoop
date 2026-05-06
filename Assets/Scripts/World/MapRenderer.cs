@@ -101,4 +101,25 @@ public class MapRenderer : MonoBehaviour
     }
 
     public MapTile[,] GetCurrentMap() => currentMap;
+    
+    /// <summary>
+    /// Обновляет визуальное представление отдельного тайла при выставлении карточки
+    /// </summary>
+    public void UpdateTileVisualization(int x, int y, LocationType locationType)
+    {
+        if (tilesContainer == null)
+            return;
+        
+        // Ищем тайл в контейнере
+        Transform tileTransform = tilesContainer.Find($"Tile_{x}_{y}");
+        if (tileTransform != null)
+        {
+            SpriteRenderer spriteRenderer = tileTransform.GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.color = GetColorForLocationType(locationType);
+                Debug.Log($"MapRenderer: Обновлена визуализация тайла ({x}, {y}) на цвет {locationType}");
+            }
+        }
+    }
 }

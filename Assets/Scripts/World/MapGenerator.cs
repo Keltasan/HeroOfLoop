@@ -30,6 +30,8 @@ public class MapGenerator : MonoBehaviour
     [SerializeField] private int tileSize = 64;
 
     private MapTile[,] map;
+    private HashSet<Vector2Int> pathTiles;  // Сохраняем путь для выставления карточек
+    private Vector2Int startPos;  // Сохраняем стартовую позицию
 
     public MapTile[,] GenerateMap()
     {
@@ -80,6 +82,7 @@ public class MapGenerator : MonoBehaviour
         Vector2Int previousPos = startPos;
         Vector2Int twoStepsBackPos = startPos;
         Vector2Int lastDirection = Vector2Int.zero;
+        Vector2Int firstGeneratedTile = Vector2Int.zero; // Для проверки замыкания пути
         bool pathIsValid = false;
         int generationAttempts = 0;
         
@@ -120,15 +123,58 @@ public class MapGenerator : MonoBehaviour
         while (pathTiles.Count < targetPathLength && attempts < maxAttempts)
         {
             // Выбираем случайное направление
-            int dirIndex = Random.Range(0, 4);
+            int dirIndex = Random.Range(0, 4); 
             Vector2Int nextDir = directions[dirIndex];
             Vector2Int nextPos = currentPos + nextDir;
             
             // Проверяем направление (изменилось ли)
-            bool directionChanged = (nextDir != lastDirection && lastDirection != Vector2Int.zero);
+            bool directionChanged = (nextDir != lastDirection && lastDirection != Vector2Int.zero && (nextPos.x < 1 || nextPos.x >= mapWidth - 1 || nextPos.y < 1 || nextPos.y >= mapHeight - 1));
             
+            if (firstGeneratedTile == Vector2Int.zero && nextPos != startPos){
+                firstGeneratedTile = nextPos;  // Запоминаем первую сгенерированную клетку для проверки замыкания пути
+                continue; // Разрешаем первый шаг в любом направлении
+            }
+
             // Проверяем границы
             if (nextPos.x < 1 || nextPos.x >= mapWidth - 1 || nextPos.y < 1 || nextPos.y >= mapHeight - 1)
+            {
+                attempts++;
+                continue;
+            }
+            
+            // Проверяем пересечение с другими клетками пути по 8 направлениям
+            bool hasDangerousNeighbor = false;
+            foreach (Vector2Int neighbor in allDirections)
+            {
+                Vector2Int checkPos = nextPos + neighbor;
+                
+                // Проверяем, есть ли эта клетка в пути
+                if (pathTiles.Contains(checkPos))
+                {
+                    // Исключения (разрешенные соседи):
+                    // 1. startPos - ВСЕГДА разрешен (мы начинаем оттуда)
+                    if (checkPos == startPos && (pathTiles.Count >= targetPathLength || nextPos == firstGeneratedTile))
+                        continue;
+                    
+                    // 2. previousPos - ВСЕГДА разрешен (клетка, из которой пришли)
+                    if (checkPos == previousPos)
+                        continue;
+                    
+                    // 3. twoStepsBackPos - разрешен только если направление изменилось
+                    if (checkPos == twoStepsBackPos && directionChanged)
+                        continue;
+                    
+                    // 4. firstGeneratedTile - разрешен только для замыкания пути
+                    if (checkPos == firstGeneratedTile && ((firstGeneratedTile != Vector2Int.zero && pathTiles.Count >= targetPathLength) || firstGeneratedTile == previousPos))
+                        continue;
+                    
+                    // Иначе это опасный сосед
+                    hasDangerousNeighbor = true;
+                    break;
+                }
+            }
+            
+            if (hasDangerousNeighbor)
             {
                 attempts++;
                 continue;
@@ -242,6 +288,10 @@ public class MapGenerator : MonoBehaviour
             Debug.LogWarning($"MapGenerator: Не удалось сгенерировать путь достаточной длины после 10 попыток");
         }
         
+        // Сохраняем путь и стартовую позицию для автоматического выставления карточек
+        this.pathTiles = pathTiles;
+        this.startPos = startPos;
+        
         // 5. Размещаем путь на карте
         int pathTileCount = 0;
         foreach (Vector2Int pos in pathTiles)
@@ -283,4 +333,52 @@ public class MapGenerator : MonoBehaviour
     public int GetMapWidth() => mapWidth;
     public int GetMapHeight() => mapHeight;
     public int GetTileSize() => tileSize;
+    
+    /// <summary>
+    /// Автоматически выставляет карточку на случайную позицию пути (кроме старта)
+    /// </summary>
+    public bool AutoPlaceCard(LocationType cardType)
+    {
+        if (pathTiles == null || pathTiles.Count <= 1)
+        {
+            Debug.LogWarning("MapGenerator: pathTiles не инициализирован или пут слишком короткий");
+            return false;
+        }
+        
+        // Получаем все позиции пути кроме стартовой
+        List<Vector2Int> unavailablePositions = new List<Vector2Int>();
+        foreach (Vector2Int pos in pathTiles)
+        {
+            if (pos != startPos)
+            {
+                unavailablePositions.Add(pos);
+            }
+        }
+        
+        // Выбираем случайную позицию
+        Vector2Int selectedPos = new Vector2Int(
+            Random.Range(1, mapWidth - 1),
+            Random.Range(1, mapHeight - 1)
+        );
+        
+        // Проверяем, что выбранная позиция не занята
+        while(unavailablePositions.Contains(selectedPos))
+        {
+            selectedPos = new Vector2Int(
+                Random.Range(1, mapWidth - 1),
+                Random.Range(1, mapHeight - 1)
+            );
+        }        
+         
+        // Выставляем карточку
+        PlaceLocationCard(selectedPos.x, selectedPos.y, cardType);
+        Debug.Log($"MapGenerator: Карточка '{cardType}' выставлена на позицию ({selectedPos.x}, {selectedPos.y})");
+        
+        return true;
+    }
+    
+    /// <summary>
+    /// Получает стартовую позицию карты
+    /// </summary>
+    public Vector2Int GetStartPosition() => startPos;
 }
