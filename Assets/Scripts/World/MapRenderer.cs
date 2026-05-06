@@ -88,7 +88,7 @@ public class MapRenderer : MonoBehaviour
         {
             LocationType.Battle => Color.red,
             LocationType.Start => Color.yellow,
-            LocationType.Empty => Color.white,
+            LocationType.Empty => Color.black,
             LocationType.Forest => Color.green,
             LocationType.Mountain => Color.gray,
             LocationType.Cemetery => new Color(0.4f, 0.2f, 0.2f),

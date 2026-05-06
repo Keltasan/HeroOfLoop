@@ -63,7 +63,7 @@ public class MapGenerator : MonoBehaviour
     {
         Debug.Log($"MapGenerator: Генерирую путь случайным блужданием");
         
-        int targetPathLength = Random.Range(15, 25);  // Целевая длина пути
+        int targetPathLength = Random.Range(15, 20);  // Целевая длина пути
         int maxAttempts = 10000;  // Максимум попыток
         
         // 1. Выбираем рандомную стартовую точку
@@ -248,7 +248,11 @@ public class MapGenerator : MonoBehaviour
         {
             if (pos != startPos)
             {
-                map[pos.x, pos.y].locationType = LocationType.Battle;
+                int randomLocationType = Random.Range(0, 100);
+                if (randomLocationType < 12)
+                    map[pos.x, pos.y].locationType = LocationType.Battle;
+                else
+                    map[pos.x, pos.y].locationType = LocationType.Path;
                 map[pos.x, pos.y].isPartOfPath = true;
                 pathTileCount++;
             }
