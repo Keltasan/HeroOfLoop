@@ -13,59 +13,45 @@ MonoBehaviour:
   m_Name: LocationCardConfig
   m_EditorClassIdentifier: Assembly-CSharp::LocationCardConfig
   cards:
-  - type: 1
+  - type: 2
     displayName: Forest
-    icon: {fileID: 0}
+    icon: {fileID: 7007010545437925719, guid: ea20affa41e35254688e010bb4228f10, type: 3}
     dropChance: 0.2
     hpBonus: 0
     damageBonus: 0
     armorBonus: 0
-  - type: 2
+  - type: 3
     displayName: Mountain
-    icon: {fileID: 0}
+    icon: {fileID: -8935424470997589857, guid: 3c46495a3cdf5104481ed58a9d95ce01, type: 3}
     dropChance: 0.15
     hpBonus: 0
     damageBonus: 0
-    armorBonus: 0
-  - type: 3
-    displayName: Cemetery
-    icon: {fileID: 0}
-    dropChance: 0.12
-    hpBonus: 0
-    damageBonus: 0
-    armorBonus: 0
+    armorBonus: 5
   - type: 4
-    displayName: Library
-    icon: {fileID: 0}
-    dropChance: 0.12
+    displayName: Cemetery
+    icon: {fileID: -4787544169540912965, guid: ea20affa41e35254688e010bb4228f10, type: 3}
+    dropChance: 0.15
     hpBonus: 0
-    damageBonus: 0
+    damageBonus: 5
     armorBonus: 0
   - type: 5
-    displayName: Shop
-    icon: {fileID: 0}
-    dropChance: 0.1
-    hpBonus: 0
+    displayName: Library
+    icon: {fileID: 474557474394889869, guid: 3c46495a3cdf5104481ed58a9d95ce01, type: 3}
+    dropChance: 0.15
+    hpBonus: 10
     damageBonus: 0
     armorBonus: 0
   - type: 6
-    displayName: Mansion
-    icon: {fileID: 0}
-    dropChance: 0.1
-    hpBonus: 0
+    displayName: Shop
+    icon: {fileID: -6419999111262848172, guid: bff8d123c6f3a6a46a2b2b683f1c41bd, type: 3}
+    dropChance: 0.2
+    hpBonus: 5
     damageBonus: 0
     armorBonus: 0
   - type: 7
-    displayName: Battle
-    icon: {fileID: 0}
+    displayName: Mansion
+    icon: {fileID: 6199791883379630216, guid: ea20affa41e35254688e010bb4228f10, type: 3}
     dropChance: 0.15
     hpBonus: 0
     damageBonus: 0
-    armorBonus: 0
-  - type: 0
-    displayName: Empty
-    icon: {fileID: 0}
-    dropChance: 0.06
-    hpBonus: 0
-    damageBonus: 0
-    armorBonus: 0
+    armorBonus: 10

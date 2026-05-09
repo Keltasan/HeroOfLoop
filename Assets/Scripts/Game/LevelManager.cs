@@ -11,6 +11,7 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private LocationCardConfig locationCardConfig;
     [SerializeField] private CombatSystem combatSystem;
     [SerializeField] private CardDropSystem cardDropSystem;
+    [SerializeField] private PlayerMovement playerMovement;
 
     private List<LocationCard> availableCards;
     private int battlesWon = 0;
@@ -43,6 +44,18 @@ public class LevelManager : MonoBehaviour
         mapRenderer.RenderMap();
         Debug.Log("LevelManager: Карта отрендерена");
 
+        // Инициализируем движение игрока
+        if (playerMovement != null)
+        {
+            List<Vector2Int> pathSequence = mapGenerator.GetPathSequence();
+            playerMovement.InitializePathSequence(pathSequence);
+            Debug.Log("LevelManager: PlayerMovement инициализирован");
+        }
+        else
+        {
+            Debug.LogError("LevelManager: PlayerMovement не назначен!");
+        }
+
         if (locationCardConfig != null)
         {
             availableCards = locationCardConfig.GetAllCards();
@@ -53,21 +66,8 @@ public class LevelManager : MonoBehaviour
             Debug.LogError("LevelManager: LocationCardConfig не назначен!");
         }
 
-        // Даем GameManager время на инициализацию перед началом боя
-        Invoke(nameof(StartFirstBattle), 0.1f);
-    }
-
-    private void StartFirstBattle()
-    {
-        Debug.Log("LevelManager: Начинаю первый бой");
-        if (combatSystem != null)
-        {
-            combatSystem.StartCombat(currentEnemyLevel);
-        }
-        else
-        {
-            Debug.LogError("LevelManager: CombatSystem не назначен!");
-        }
+        // Боя начинаются автоматически когда игрок наступает на боевую клетку (управляется PlayerMovement)
+        // Нет необходимости в StartFirstBattle()
     }
 
     public void OnBattleWon()
@@ -104,10 +104,10 @@ public class LevelManager : MonoBehaviour
         }
         else
         {
-            // Начинаем следующий бой
-            if (combatSystem != null)
+            // Уведомляем PlayerMovement об окончании боя и продолжаем движение
+            if (playerMovement != null)
             {
-                combatSystem.StartCombat(currentEnemyLevel);
+                playerMovement.OnCombatEnded();
             }
         }
     }

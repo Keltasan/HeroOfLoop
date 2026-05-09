@@ -31,6 +31,7 @@ public class MapGenerator : MonoBehaviour
 
     private MapTile[,] map;
     private HashSet<Vector2Int> pathTiles;  // Сохраняем путь для выставления карточек
+    private List<Vector2Int> pathSequence;  // Сохраняем порядок генерации пути для движения игрока
     private Vector2Int startPos;  // Сохраняем стартовую позицию
 
     public MapTile[,] GenerateMap()
@@ -78,6 +79,7 @@ public class MapGenerator : MonoBehaviour
         
         // 2. Инициализируем путь и повторяем генерацию до достижения целевой длины
         HashSet<Vector2Int> pathTiles = new HashSet<Vector2Int> { startPos };
+        List<Vector2Int> pathSequence = new List<Vector2Int> { startPos };  // Сохраняем порядок генерации
         Vector2Int currentPos = startPos;
         Vector2Int previousPos = startPos;
         Vector2Int twoStepsBackPos = startPos;
@@ -90,7 +92,9 @@ public class MapGenerator : MonoBehaviour
         {
             generationAttempts++;
             pathTiles.Clear();
+            pathSequence.Clear();  // Очищаем список порядка
             pathTiles.Add(startPos);
+            pathSequence.Add(startPos);  // Начинаем с стартовой позиции
             currentPos = startPos;
             previousPos = startPos;
             twoStepsBackPos = startPos;
@@ -143,7 +147,7 @@ public class MapGenerator : MonoBehaviour
             }
             
             // Проверяем пересечение с другими клетками пути по 8 направлениям
-            bool hasDangerousNeighbor = false;
+            /*bool hasDangerousNeighbor = false;
             foreach (Vector2Int neighbor in allDirections)
             {
                 Vector2Int checkPos = nextPos + neighbor;
@@ -178,7 +182,7 @@ public class MapGenerator : MonoBehaviour
             {
                 attempts++;
                 continue;
-            }
+            }*/
             
             // Проверяем, что мы не возвращаемся на предыдущие шаги
             if (nextPos == previousPos)
@@ -203,6 +207,7 @@ public class MapGenerator : MonoBehaviour
             
             // Позиция валидна! Добавляем ее
             pathTiles.Add(nextPos);
+            pathSequence.Add(nextPos);  // Сохраняем в порядке добавления
             twoStepsBackPos = previousPos;
             previousPos = currentPos;
             currentPos = nextPos;
@@ -290,6 +295,7 @@ public class MapGenerator : MonoBehaviour
         
         // Сохраняем путь и стартовую позицию для автоматического выставления карточек
         this.pathTiles = pathTiles;
+        this.pathSequence = pathSequence;  // Сохраняем порядок генерации
         this.startPos = startPos;
         
         // 5. Размещаем путь на карте
@@ -333,6 +339,11 @@ public class MapGenerator : MonoBehaviour
     public int GetMapWidth() => mapWidth;
     public int GetMapHeight() => mapHeight;
     public int GetTileSize() => tileSize;
+    
+    /// <summary>
+    /// Получает путь в порядке генерации для движения игрока
+    /// </summary>
+    public List<Vector2Int> GetPathSequence() => new List<Vector2Int>(pathSequence);
     
     /// <summary>
     /// Автоматически выставляет карточку на случайную позицию пути (кроме старта)
