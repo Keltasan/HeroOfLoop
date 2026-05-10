@@ -12,6 +12,7 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private CombatSystem combatSystem;
     [SerializeField] private CardDropSystem cardDropSystem;
     [SerializeField] private PlayerMovement playerMovement;
+    [SerializeField] private CardBonusSystem cardBonusSystem;
 
     private List<LocationCard> availableCards;
     private int battlesWon = 0;
@@ -121,38 +122,24 @@ public class LevelManager : MonoBehaviour
             // Автоматически выставляем карточку на карте
             if (mapGenerator != null && mapRenderer != null)
             {
-                bool placed = mapGenerator.AutoPlaceCard(card.type);
+                bool placed = mapGenerator.AutoPlaceCard(card);  // Теперь передаем полную карточку
                 if (placed)
                 {
-                    // Обновляем визуализацию карты
-                    Vector2Int cardPos = GetRandomCardPosition();
-                    mapRenderer.UpdateTileVisualization(cardPos.x, cardPos.y, card.type);
-                    Debug.Log($"LevelManager: Карточка '{card.displayName}' автоматически выставлена");
+                    // Применяем бонусы от карточки к игроку
+                    if (cardBonusSystem != null && combatSystem != null)
+                    {
+                        Character player = combatSystem.GetPlayer();
+                        if (player != null)
+                        {
+                            cardBonusSystem.ApplyBonusesToCharacter(player);
+                            Debug.Log($"LevelManager: Бонусы от карточки '{card.displayName}' применены к игроку");
+                        }
+                    }
                 }
             }
         }
     }
     
-    /// <summary>
-    /// Получает случайную позицию для выставления карточки
-    /// </summary>
-    private Vector2Int GetRandomCardPosition()
-    {
-        // Это вспомогательный метод для получения позиции выставленной карточки
-        // Можно оптимизировать, если нужно
-        Vector2Int startPos = mapGenerator.GetStartPosition();
-        
-        // Для упрощения возвращаем случайную позицию рядом со стартом
-        // В реальном приложении можно отслеживать последнюю позицию выставления
-        Vector2Int randomOffset = new Vector2Int(Random.Range(-2, 3), Random.Range(-2, 3));
-        Vector2Int pos = startPos + randomOffset;
-        
-        // Убеждаемся, что позиция в границах карты
-        pos.x = Mathf.Clamp(pos.x, 0, mapGenerator.GetMapWidth() - 1);
-        pos.y = Mathf.Clamp(pos.y, 0, mapGenerator.GetMapHeight() - 1);
-        
-        return pos;
-    }
 
     /*public void PlaceLocationCard(int x, int y, LocationCard card)
     {

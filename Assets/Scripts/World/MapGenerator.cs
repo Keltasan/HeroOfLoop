@@ -28,6 +28,7 @@ public class MapGenerator : MonoBehaviour
     [SerializeField] private int mapWidth = 15;
     [SerializeField] private int mapHeight = 10;
     [SerializeField] private int tileSize = 64;
+    [SerializeField] private CardBonusSystem cardBonusSystem;
 
     private MapTile[,] map;
     private HashSet<Vector2Int> pathTiles;  // Сохраняем путь для выставления карточек
@@ -136,6 +137,13 @@ public class MapGenerator : MonoBehaviour
             
             if (firstGeneratedTile == Vector2Int.zero && nextPos != startPos){
                 firstGeneratedTile = nextPos;  // Запоминаем первую сгенерированную клетку для проверки замыкания пути
+                pathTiles.Add(nextPos);
+                pathSequence.Add(nextPos);
+
+                twoStepsBackPos = previousPos;
+                previousPos = currentPos;
+                currentPos = nextPos;
+                lastDirection = nextDir;
                 continue; // Разрешаем первый шаг в любом направлении
             }
 
@@ -293,6 +301,23 @@ public class MapGenerator : MonoBehaviour
             Debug.LogWarning($"MapGenerator: Не удалось сгенерировать путь достаточной длины после 10 попыток");
         }
         
+        // Перестраиваем pathSequence чтобы включить все клетки в правильном порядке
+        // (включая те, что были добавлены при замыкании пути)
+        pathSequence.Clear();
+        pathSequence.Add(startPos);
+        
+        // Добавляем остальные клетки в произвольном порядке из pathTiles
+        // Это обеспечит полный путь для игрока
+        foreach (Vector2Int pos in pathTiles)
+        {
+            if (pos != startPos && !pathSequence.Contains(pos))
+            {
+                pathSequence.Add(pos);
+            }
+        }
+        
+        Debug.Log($"MapGenerator: Полная последовательность пути обновлена, всего клеток: {pathSequence.Count}");
+        
         // Сохраняем путь и стартовую позицию для автоматического выставления карточек
         this.pathTiles = pathTiles;
         this.pathSequence = pathSequence;  // Сохраняем порядок генерации
@@ -346,44 +371,56 @@ public class MapGenerator : MonoBehaviour
     public List<Vector2Int> GetPathSequence() => new List<Vector2Int>(pathSequence);
     
     /// <summary>
+    /// <summary>
     /// Автоматически выставляет карточку на случайную позицию пути (кроме старта)
     /// </summary>
-    public bool AutoPlaceCard(LocationType cardType)
+    public bool AutoPlaceCard(LocationCard card)
     {
+        if (card == null)
+        {
+            Debug.LogWarning("MapGenerator: Попытка выставить null карточку");
+            return false;
+        }
+        
         if (pathTiles == null || pathTiles.Count <= 1)
         {
-            Debug.LogWarning("MapGenerator: pathTiles не инициализирован или пут слишком короткий");
+            Debug.LogWarning("MapGenerator: pathTiles не инициализирован или путь слишком короткий");
             return false;
         }
         
         // Получаем все позиции пути кроме стартовой
-        List<Vector2Int> unavailablePositions = new List<Vector2Int>();
+        List<Vector2Int> availablePositions = new List<Vector2Int>();
         foreach (Vector2Int pos in pathTiles)
         {
             if (pos != startPos)
             {
-                unavailablePositions.Add(pos);
+                availablePositions.Add(pos);
             }
         }
         
-        // Выбираем случайную позицию
-        Vector2Int selectedPos = new Vector2Int(
-            Random.Range(1, mapWidth - 1),
-            Random.Range(1, mapHeight - 1)
-        );
-        
-        // Проверяем, что выбранная позиция не занята
-        while(unavailablePositions.Contains(selectedPos))
+        if (availablePositions.Count == 0)
         {
-            selectedPos = new Vector2Int(
-                Random.Range(1, mapWidth - 1),
-                Random.Range(1, mapHeight - 1)
-            );
-        }        
-         
-        // Выставляем карточку
-        PlaceLocationCard(selectedPos.x, selectedPos.y, cardType);
-        Debug.Log($"MapGenerator: Карточка '{cardType}' выставлена на позицию ({selectedPos.x}, {selectedPos.y})");
+            Debug.LogWarning("MapGenerator: Нет доступных позиций для выставления карточки");
+            return false;
+        }
+        
+        // Выбираем случайную позицию из доступных
+        Vector2Int selectedPos = availablePositions[Random.Range(0, availablePositions.Count)];
+        
+        // Выставляем карточку на карте
+        PlaceLocationCard(selectedPos.x, selectedPos.y, card.type);
+        
+        // Регистрируем карточку в системе бонусов
+        if (cardBonusSystem != null)
+        {
+            cardBonusSystem.RegisterPlacedCard(selectedPos, card);
+        }
+        else
+        {
+            Debug.LogWarning("MapGenerator: CardBonusSystem не назначен!");
+        }
+        
+        Debug.Log($"MapGenerator: Карточка '{card.displayName}' выставлена на позицию ({selectedPos.x}, {selectedPos.y})");
         
         return true;
     }

@@ -10,7 +10,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private MapGenerator mapGenerator;
     [SerializeField] private CombatSystem combatSystem;
     [SerializeField] private LevelManager levelManager;
-    [SerializeField] private float moveDelay = 0.25f;  // Задержка между шагами (0.25 сек)
+    [SerializeField] private CardBonusSystem cardBonusSystem;
+    [SerializeField] private float moveDelay = 0.5f;  // Задержка между шагами (0.25 сек)
     
     private List<Vector2Int> pathSequence;  // Путь в порядке генерации
     private int currentPathIndex = 0;  // Текущая позиция в пути
@@ -113,6 +114,14 @@ public class PlayerMovement : MonoBehaviour
         
         if (combatSystem != null)
         {
+            // Применяем активные бонусы к игроку перед боем
+            Character player = combatSystem.GetPlayer();
+            if (player != null && cardBonusSystem != null)
+            {
+                cardBonusSystem.ApplyBonusesToCharacter(player);
+                Debug.Log($"PlayerMovement: Бонусы из выставленных карточек применены перед боем");
+            }
+            
             combatSystem.StartCombat(enemyLevel);
             Debug.Log($"PlayerMovement: Начат бой уровня {enemyLevel}");
         }

@@ -78,6 +78,7 @@
     <Compile Include="Assets\Scripts\UI\MainMenuController.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexShakeA.cs" />
     <Compile Include="Assets\Scripts\World\MapRenderer.cs" />
+    <Compile Include="Assets\Scripts\Systems\CardBonusSystem.cs" />
     <Compile Include="Assets\Scripts\Data\GameData.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01_UGUI.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\SimpleScript.cs" />
